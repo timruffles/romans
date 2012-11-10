@@ -1,7 +1,7 @@
 rigs = {}
 
 local tiles = MOAITileDeck2D.new()
-tiles:setTexture("tiles.png")
+tiles:setTexture("asset/tiles.png")
 tiles:setSize(8,8)
 tiles:setRect ( -50.5, -85.5, 50.5, 85.5 )
 

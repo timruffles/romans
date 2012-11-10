@@ -1,7 +1,4 @@
-package.path = package.path .. ";../?.lua"
-
-require "helpers"
-require "moai"
+require "src/helpers"
 
 levels = {}
 
@@ -17,7 +14,7 @@ function levels.init(levelName)
 	local level = require ("levels/" .. levelName)
 
 	local tiles = MOAITileDeck2D.new()
-	tiles:setTexture("tiles.png")
+	tiles:setTexture("asset/tiles.png")
 	tiles:setSize(8,8)
 
 	local tileIds = level.layers[TILE_LAYER].data

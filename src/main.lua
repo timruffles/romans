@@ -1,5 +1,5 @@
-require "levels"
-require "rigs"
+require "src/levels"
+require "src/rigs"
 
 local test = function(layer)
 	local sprite = MOAIGfxQuad2D.new()
