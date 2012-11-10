@@ -28,14 +28,9 @@ function init()
 	MOAIRenderMgr.setRenderTable({layer})
 
 	local level = levels.init("test")
+	
+	local slice, rows = level:getRows(1,4)
 
-	local sliceDuo = level:getRow(2)
-	sliceDuo:setLoc(-screenWidth/2,-215)
-	layer:insertProp(sliceDuo)
-
-	local slice = level:getRow(1)
-
-	slice:setLoc(-screenWidth/2,-screenHeight/2)
 	layer:insertProp(slice)
 
 

@@ -1,6 +1,7 @@
 package.path = package.path .. ";../?.lua"
 
 require "helpers"
+require "moai"
 
 levels = {}
 
@@ -40,11 +41,12 @@ function levels.init(levelName)
 		local parentRow
 		local rows = {}
 
-		for rowOffset in from, to do
-			local row = rowOffset
+		for rowOffset = from, to do
+			local row = self:getRow(rowOffset)
 			if parentRow then
-				row.setTraitSource(parentRow,MOAITraits.INHERIT_LOC + MOAITraits.INHERIT_PARTITION)
-				row.setLoc(0,-85)
+				row:setAttrLink(MOAIProp2D.INHERIT_LOC, parentRow, MOAIProp2D.TRANSFORM_TRAIT)
+				row:setAttrLink(MOAIProp2D.ATTR_PARTITION, parentRow)
+				row:setLoc(0,-85)
 			else
 				parentRow = row
 			end
