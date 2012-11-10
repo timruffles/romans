@@ -25,7 +25,8 @@ function levels.init(levelName)
 		local grid = MOAIGrid.new()
 		grid:initRectGrid(level.width,1,level.tilewidth,171)
 		--helpers.trace(rowOffset,unpack(getRow(tileIds,level.width,rowOffset)))
-		grid:setRow(1,unpack(getRow(tileIds,level.width,rowOffset)))
+		local row = getRow(tileIds,level.width,rowOffset)
+		grid:setRow(1,unpack(row))
 
 		local prop = MOAIProp2D.new()
 		prop:setDeck(tiles)
@@ -34,19 +35,25 @@ function levels.init(levelName)
 		return prop
 	end
 
+	local logicalToLevel = function(row)
+		return level.height + 1 - row
+	end
+
 	function level:getRows(from,to)
 
 		local parentRow
 		local rows = {}
 
-		for rowOffset = from, to do
-			local row = self:getRow(rowOffset)
+		for rowOffset = to, from, -1 do
+			local row = self:getRow(logicalToLevel(rowOffset))
 			if parentRow then
 				row:setAttrLink(MOAIProp2D.INHERIT_LOC, parentRow, MOAIProp2D.TRANSFORM_TRAIT)
 				row:setAttrLink(MOAIProp2D.ATTR_PARTITION, parentRow)
-				row:setLoc(0,-85 * (rowOffset - 1))
+				row:setLoc(0,85 * (rowOffset - 1))
+				row:setPriority(1)
 			else
 				parentRow = row
+				parentRow:setPriority(2)
 			end
 			table.insert(rows,row)
 		end

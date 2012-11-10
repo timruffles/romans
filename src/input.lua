@@ -14,9 +14,13 @@ input.init = function(vent)
 			points = {}
 			MOAIInputMgr.device.pointer:setCallback(pointCallback)
 		else
+			print("gesture")
+			local output = "{"
 			for i,pos in ipairs(points) do
-				helpers.trace(unpack(pos))
+				output = output .. string.format("{%s,%s},",unpack(pos))
 			end
+			output = output .. "}"
+			print(output)
 			vent:trigger("input:gesture",points)
 		end
 	end)

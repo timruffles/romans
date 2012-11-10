@@ -30,3 +30,7 @@ rigs.initRoman = function()
 	return rig
 
 end
+
+rigs.initSquad = function()
+
+end

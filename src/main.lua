@@ -13,9 +13,6 @@ local test = function(layer)
 	layer:insertProp(prop)
 end
 
-
-
-
 function init()
 
 	if screenWidth == nil then screenWidth = 320 end
@@ -25,7 +22,7 @@ function init()
 
 	viewport = MOAIViewport.new()
 	viewport:setSize(screenWidth,screenHeight)
-	local x_scale, y_scale = screenWidth*4,screenHeight*4
+	local x_scale, y_scale = screenWidth*2.5,screenHeight*2.5
 	viewport:setScale(x_scale,y_scale)
 
 	local X_ORIGIN = (x_scale / screenWidth) * -screenWidth / 2
@@ -36,12 +33,14 @@ function init()
 		
 		local slice, rows = level:getRows(1,100)
 
-		slice:setLoc(X_ORIGIN,Y_ORIGIN)
+		slice:setLoc(X_ORIGIN,-Y_ORIGIN)
 		layer:insertProp(slice)
 
 		local roman = rigs.initRoman()
 		layer:insertProp(roman.prop)
 		roman.prop:setPriority(500)
+
+		return slice
 	end
 
 	layer = MOAILayer2D.new()
@@ -50,7 +49,7 @@ function init()
 	MOAIRenderMgr.setRenderTable({layer})
 
 	vent = vents.initVent()
-	initLevel(layer)
+	local level = initLevel(layer)
 	input.init(vent)
 
 	mainThread = MOAICoroutine.new ()
@@ -63,5 +62,4 @@ function init()
 
 end
 
-print("Starting up on:" .. MOAIEnvironment.osBrand  .. " version:" .. (MOAIEnvironment.osVersion or ""))
 init()
