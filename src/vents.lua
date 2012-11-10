@@ -27,5 +27,3 @@ function vents.initVent()
 	end
 	return vent
 end
-
-return vents
