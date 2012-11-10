@@ -20,7 +20,7 @@ function init()
 
 	viewport = MOAIViewport.new()
 	viewport:setSize(screenWidth,screenHeight)
-	viewport:setScale(screenWidth,screenHeight)
+	viewport:setScale(screenWidth*2,screenHeight*2)
 
 	layer = MOAILayer2D.new()
 	layer:setViewport(viewport)
@@ -29,8 +29,9 @@ function init()
 
 	local level = levels.init("test")
 	
-	local slice, rows = level:getRows(1,4)
+	local slice, rows = level:getRows(1,16)
 
+	slice:setLoc(-screenWidth,screenHeight)
 	layer:insertProp(slice)
 
 
