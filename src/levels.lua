@@ -6,8 +6,9 @@ local TILE_LAYER = 1
 local ENEMY_LAYER = 2
 
 local getRow = function(tiles,w,row)
-	return helpers.table.slice(tiles,row * w,(row + 1) * w - 1)
+	return helpers.table.slice(tiles,(row - 1) * w + 1,(row + 1) * w)
 end
+
 
 function levels.init(levelName)
 
