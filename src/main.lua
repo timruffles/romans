@@ -1,5 +1,7 @@
 require "src/levels"
 require "src/rigs"
+require "src/input"
+require "src/vents"
 
 local test = function(layer)
 	local sprite = MOAIGfxQuad2D.new()
@@ -10,6 +12,8 @@ local test = function(layer)
 	prop:setDeck(sprite)
 	layer:insertProp(prop)
 end
+
+
 
 
 function init()
@@ -27,31 +31,36 @@ function init()
 	local X_ORIGIN = (x_scale / screenWidth) * -screenWidth / 2
 	local Y_ORIGIN = (y_scale / screenHeight) * screenHeight / 2
 
+	function initLevel(layer)
+		local level = levels.init("test")
+		
+		local slice, rows = level:getRows(1,100)
+
+		slice:setLoc(X_ORIGIN,Y_ORIGIN)
+		layer:insertProp(slice)
+
+		local roman = rigs.initRoman()
+		layer:insertProp(roman.prop)
+		roman.prop:setPriority(500)
+	end
+
 	layer = MOAILayer2D.new()
 	layer:setViewport(viewport)
 
 	MOAIRenderMgr.setRenderTable({layer})
 
-	local level = levels.init("test")
-	
-	local slice, rows = level:getRows(1,100)
-
-	slice:setLoc(X_ORIGIN,Y_ORIGIN)
-	layer:insertProp(slice)
-
-	local roman = rigs.initRoman()
-	layer:insertProp(roman.prop)
-	roman.prop:setPriority(500)
+	vent = vents.initVent()
+	initLevel(layer)
+	input.init(vent)
 
 	mainThread = MOAICoroutine.new ()
 	mainThread:run(function()
 		while true do
 			coroutine.yield()
+			vent:trigger("tick")
 		end
 	end)
 
-	MOAICoroutine.blockOnAction ( slice:seekLoc ( X_ORIGIN, Y_ORIGIN + screenHeight * 8 , 14, MOAIEaseType.LINEAR ))
-	
 end
 
 print("Starting up on:" .. MOAIEnvironment.osBrand  .. " version:" .. (MOAIEnvironment.osVersion or ""))
