@@ -16,10 +16,19 @@ local differences = function(points)
 	return diffs
 end
 
-local mean = function(xs)
+
+local sum = function(xs)
 	return _.reduce(xs,0,function(sum,x)
 		return sum + x
-	end) / #xs
+	end)
+end
+
+local mean = function(xs)
+	return sum(xs) / #xs
+end
+
+local travel = function(differences)
+	return sum( _.map(differences,_.compose(math.abs,getX)) ) + sum( _.map(differences,_.compose(math.abs,getY)) )
 end
 
 local stdDev = function(samples)
@@ -34,7 +43,6 @@ local stdDev = function(samples)
 end
 
 local chunks = function(xs,size)
-	print("chunking ",#xs,"by",size)
 	local chunked = _.reduce(xs,{chunks = {}, chunk = {}},function(memo,x)
 		if #memo.chunk == size then
 			table.insert(memo.chunks,chunk)
@@ -49,6 +57,50 @@ local chunks = function(xs,size)
 	return chunked.chunks
 end
 
+local slices = function(xs,size)
+	local slices = {}
+	local xsCount = #xs
+	for i = 1,xsCount do
+		local slice = {}
+		for io = 0,size - 1 do
+			if i + io < xsCount + 1 then
+				table.insert(slice,xs[i+io])
+			end
+		end
+		if #slice == size then
+			table.insert(slices,slice)
+		end
+	end
+	return slices
+end
+
+local goodChunkSize = function(xs,min)
+	min = min or 2
+	return math.max(math.ceil(math.sqrt(#diffs)),min)
+end
+
+local movingAverage = function(xs)
+	local size = goodChunkSize(xs,3)
+	if size / 2 == 0 then
+		size = size - 1
+	end
+	local sliced = slices(xs,size)
+	local averages = _.map(sliced,mean)
+	local rampLength =  math.floor(sliced /2)/2
+	local weights = {}
+	for i = rampLength,1,-1 do
+	end
+	for i,x in ipairs(xs) do
+		local avg
+		if i < rampLength then
+			avg = math.floor(i/size)
+		else
+			avg = averages[i]
+		end
+
+	end
+end
+
 local turningPoints = function(diffs)
 	local stdDev, mean = stdDev(diffs)
 	local cutoff = stdDev
@@ -56,7 +108,7 @@ local turningPoints = function(diffs)
 		return x > (mean + stdDev)
 	end
 	print(stdDev,mean,unpack(_.map(diffs,stdDevs)))
-	local chunked = chunks(diffs,math.max(math.ceil(math.sqrt(#diffs)),2))
+	local chunked = chunks(diffs,goodChunkSize(diffs))
 	return _.map(chunked,function(chunk)
 		local isPos
 		local turned = false

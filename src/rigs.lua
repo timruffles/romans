@@ -33,4 +33,6 @@ end
 
 rigs.initSquad = function()
 
+
+
 end
