@@ -46,7 +46,7 @@ function levels.init(levelName)
 			if parentRow then
 				row:setAttrLink(MOAIProp2D.INHERIT_LOC, parentRow, MOAIProp2D.TRANSFORM_TRAIT)
 				row:setAttrLink(MOAIProp2D.ATTR_PARTITION, parentRow)
-				row:setLoc(0,(-85 * rowOffset))
+				row:setLoc(0,-85 * (rowOffset - 1))
 			else
 				parentRow = row
 			end
