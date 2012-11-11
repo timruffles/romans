@@ -49,3 +49,9 @@ function pp(...)
 	end
 	print(unpack(args))
 end
+
+function helpers.pluck(k)
+	return function(o)
+		return o[k]
+	end
+end

@@ -28,6 +28,8 @@ function init()
 	local X_ORIGIN = (x_scale / screenWidth) * -screenWidth / 2
 	local Y_ORIGIN = (y_scale / screenHeight) * screenHeight / 2
 
+	local SCROLL_SPEED = 1
+
 	function initLevel(layer)
 		local level = levels.init("test")
 		
@@ -39,6 +41,7 @@ function init()
 		layer:insertProp(roman.prop)
 		roman.prop:setPriority(500)
 
+
 		return slice
 	end
 
@@ -49,9 +52,10 @@ function init()
 
 	vent = vents.initVent()
 	local level = initLevel(layer)
-	input.init(vent)
+	input.init(vent,layer)
 
-	rigs.initSquad(3)
+	local squad = rigs.initSquad(3)
+	layer:insertProp(squad.prop)
 
 	mainThread = MOAICoroutine.new()
 	mainThread:run(function()

@@ -1,12 +1,13 @@
 require "src/helpers"
+_ = require "libs/underscore"
 
 input = {}
 
-input.init = function(vent)
+input.init = function(vent,layer)
 
 	local points = {}
-	local pointCallback = function(x,y)
-		table.insert(points,{x,y})
+	local pointCallback = function(...)
+		table.insert(points,arg)
 	end
 	
 	MOAIInputMgr.device.mouseLeft:setCallback(function(isMouseDown)
@@ -14,14 +15,11 @@ input.init = function(vent)
 			points = {}
 			MOAIInputMgr.device.pointer:setCallback(pointCallback)
 		else
-			print("gesture")
-			local output = "{"
-			for i,pos in ipairs(points) do
-				output = output .. string.format("{%s,%s},",unpack(pos))
-			end
-			output = output .. "}"
-			print(output)
-			vent:trigger("input:gesture",points)
+			--print(output)
+			local worldPoints = _.map(points,function(p)
+				return {layer:wndToWorld(unpack(p))}
+			end)
+			vent:trigger("input:gesture",worldPoints)
 		end
 	end)
 
