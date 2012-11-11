@@ -59,6 +59,16 @@ function levels.init(levelName)
 			table.insert(rows,row)
 		end
 
+		mainThread = MOAICoroutine.new()
+		mainThread:run(function()
+			local wait = function(action)
+				while action:isBusy() do coroutine.yield() end
+			end
+			while true do
+				wait(parentRow:moveLoc ( 0, -1, 0.75,  MOAIEaseType.LINEAR))
+			end
+		end)
+
 		return parentRow, rows
 
 	end
