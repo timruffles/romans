@@ -23,7 +23,7 @@ function levels.init(levelName)
 	function level:getRow(rowOffset)
 
 		local grid = MOAIGrid.new()
-		grid:initRectGrid(level.width,1,level.tilewidth,171)
+		grid:initRectGrid(level.width,1,1,2)
 		--helpers.trace(rowOffset,unpack(getRow(tileIds,level.width,rowOffset)))
 		local row = getRow(tileIds,level.width,rowOffset)
 		grid:setRow(1,unpack(row))
@@ -49,11 +49,12 @@ function levels.init(levelName)
 			if parentRow then
 				row:setAttrLink(MOAIProp2D.INHERIT_LOC, parentRow, MOAIProp2D.TRANSFORM_TRAIT)
 				row:setAttrLink(MOAIProp2D.ATTR_PARTITION, parentRow)
-				row:setLoc(0,85 * (rowOffset - 1))
+				row:setLoc(-4,(rowOffset - 1) * 1)
 				row:setPriority(1)
 			else
 				parentRow = row
 				parentRow:setPriority(2)
+				parentRow:setLoc(-4,-6)
 			end
 			table.insert(rows,row)
 		end

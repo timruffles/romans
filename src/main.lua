@@ -1,4 +1,3 @@
-require "src/levels"
 require "src/rigs"
 require "src/input"
 require "src/vents"
@@ -23,7 +22,8 @@ function init()
 	viewport = MOAIViewport.new()
 	viewport:setSize(screenWidth,screenHeight)
 	local x_scale, y_scale = screenWidth*2.5,screenHeight*2.5
-	viewport:setScale(x_scale,y_scale)
+	viewport:setScale(8,12)
+
 
 	local X_ORIGIN = (x_scale / screenWidth) * -screenWidth / 2
 	local Y_ORIGIN = (y_scale / screenHeight) * screenHeight / 2
@@ -33,7 +33,6 @@ function init()
 		
 		local slice, rows = level:getRows(1,100)
 
-		slice:setLoc(X_ORIGIN,-Y_ORIGIN)
 		layer:insertProp(slice)
 
 		local roman = rigs.initRoman()
@@ -52,7 +51,9 @@ function init()
 	local level = initLevel(layer)
 	input.init(vent)
 
-	mainThread = MOAICoroutine.new ()
+	rigs.initSquad(3)
+
+	mainThread = MOAICoroutine.new()
 	mainThread:run(function()
 		while true do
 			coroutine.yield()
