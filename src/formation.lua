@@ -27,8 +27,8 @@ end
 local function indexed(grid)
 	local newprops = {}
 	local counter = 0
-	local rowDelta = math.floor(matrix.rows(grid) / 2)
-	local colDelta = math.floor(matrix.columns(grid) / 2)
+	local rowDelta = math.ceil(matrix.rows(grid) / 2)
+	local colDelta = math.ceil(matrix.columns(grid) / 2)
 	for i = 1, matrix.rows(grid) do
 		for j = 1, matrix.columns(grid) do
 			counter = counter + 1
