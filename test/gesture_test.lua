@@ -22,7 +22,8 @@ function setup()
 end
 
 function test_g()
-	local result = protractor.DollarRecognizer.this.Recognize(test_data.vs, true)
+	local protractor = DollarRecognizer()
+	local result = protractor.Recognize(test_data.vs, true)
 	matrix.print(result)
 end
 
