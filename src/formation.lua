@@ -8,6 +8,8 @@ package.path = package.path .. ";../?.lua"
 local _ = require '../libs/underscore'
 local matrix = require '../libs/matrix'
 
+formation = {}
+
 -- input: array of props
 -- output: horizontal matrix of props
 local function toMatrix(props)
@@ -35,23 +37,38 @@ local function indexed(grid)
 			newprops[counter] = {iw, jw, matrix.getelement(grid, i, j)}
 		end
 	end
-
 	return newprops
 end
 
-function verticalBar(props)
+-- input: a weighted, indexed grid
+-- output: the same, but with all nil props purged
+local function trim(grid)
+	local newgrid = {}
+	local counter = 0
+	for i = 1, #grid do
+		-- match unwanted values, e.g. nil, or 0 (when using arrow, dunno why yet)
+		if (grid[i][3] == nil or grid[i][3] == 0) then
+			counter = counter + 1
+		else
+			newgrid[i - counter] = grid[i]
+		end
+	end
+	return newgrid
+end
+
+function formation.verticalBar(props)
 	local grid = matrix.rotr(toMatrix(props))
 	return indexed(grid)
 end
 
-function horizontalBar(props)
+function formation.horizontalBar(props)
 	local grid = toMatrix(props)
 	return indexed(grid)
 end
 
 -- Roman Testudo formation
 -- Will take the sqrt of the length of props to determine how long each side should be
-function testudo(props)
+function formation.testudo(props)
 	local cols = math.ceil(math.sqrt(table.getn(props)))
 	local rows = math.ceil(#props / cols)
 	local grid = matrix(cols, rows)
@@ -59,14 +76,13 @@ function testudo(props)
 	for i = 1, cols do
 		for j = 1, rows do
 			counter = counter + 1
-			-- print(i, j, props[counter] or "undefined")
 			grid[i][j] = props[counter] or nil
 		end
 	end
-	return indexed(grid)
+	return trim(indexed(grid))
 end
 
-function arrow(props)
+function formation.arrow(props)
 	local cols = #props
 	local upper = cols + (cols % 2)
 	local rows = math.ceil(cols / 2)
@@ -84,31 +100,9 @@ function arrow(props)
 		else
 			row = i - rows + 1
 		end
-		-- print("row", row, "y", i)
-		grid[row][i] = props[i]
+		grid[row][i] = props[i] or nil
 	end
-	return indexed(grid)
-	-- return grid
+	return trim(indexed(grid))
 end
 
-local sample = {"a", "b", "c", "d", "e", "f", "g", "h", "i" }
 
-local vert = verticalBar(sample)
-local hori = horizontalBar(sample)
-print("Vertical bar")
-matrix.print(vert)
-
-print("Horizontal bar")
-matrix.print(hori)
-
-print("->")
-print("hr", matrix.rows(hori))
-print("hc", matrix.columns(hori))
-print("vr", matrix.rows(vert))
-print("vc", matrix.columns(vert))
-
-print("Testudo")
-matrix.print(testudo(sample))
-
-print("Arrow")
-matrix.print(arrow(sample))
