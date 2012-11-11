@@ -44,7 +44,6 @@ function levels.init(levelName)
 		return _.reduce(objs,{},function(byRow,obj)
 			obj.x = math.ceil(obj.x / level.tilewidth)
 			obj.y = logicalToLevel( math.ceil(obj.y / level.tileheight) )
-			print(obj.x,obj.y)
 			byRow[obj.y] = byRow[obj.y] or {}
 			table.insert(byRow[obj.y],obj)
 			return byRow

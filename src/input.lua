@@ -15,6 +15,9 @@ input.init = function(vent,layer)
 			points = {}
 			MOAIInputMgr.device.pointer:setCallback(pointCallback)
 		else
+			if #points < 2 then
+				return
+			end
 			--print(output)
 			local worldPoints = _.map(points,function(p)
 				return {layer:wndToWorld(unpack(p))}

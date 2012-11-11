@@ -65,18 +65,19 @@ rigs.initSquad = function(n)
 			roman.prop:setAttrLink(MOAIProp2D.ATTR_PARTITION, key.prop)
 			roman.prop:setLoc(i,0)
 		end
-		table.insert(squad,roman)
+		squad[roman] = true
 	end
 
 	vent:on("input:gesture",function(points)
 		local eol = eol(points)
-		for i,roman in pairs(squad) do
+		for roman,i in pairs(squad) do
 			local x, y = roman.prop:getLoc()
 			roman.prop:seekLoc( x, eol(x), 0.75,  MOAIEaseType.LINEAR)
 		end
 	end)
 
 	rig.prop = key.prop
+	rig.squad = squad
 
 	return rig
 
