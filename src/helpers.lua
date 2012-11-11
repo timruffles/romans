@@ -1,3 +1,5 @@
+local serpent = require "libs/serpent"
+
 helpers = {table={}}
 
 local locationFormat = "%s(%s):"
@@ -40,14 +42,18 @@ helpers.table.join = function(list, delimiter)
   return string
 end
 
-function pp(...)
+function p(...)
 	local args = ...
 	if #args == 1 then
 		if type(args[1]) == "table" then
-			return print(unpack(args[1]))
+			return print(serpent.block(args[1]))
 		end
 	end
 	print(unpack(args))
+end
+
+function pp(table)
+	print(serpent.block(table))
 end
 
 function helpers.pluck(k)

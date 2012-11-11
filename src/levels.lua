@@ -10,9 +10,10 @@ local getRow = function(tiles,w,row)
 end
 
 
-function levels.init(levelName)
+function levels.init(levelName,dims)
 
 	local level = require ("levels/" .. levelName)
+	local VISIBLE_WIDTH, VISIBLE_HEIGHT = unpack(dims)
 
 	local tiles = MOAITileDeck2D.new()
 	tiles:setTexture("asset/tiles.png")
@@ -42,16 +43,18 @@ function levels.init(levelName)
 	local getObjects = function(level)
 		local objs = level.layers[ENEMY_LAYER].objects
 		return _.reduce(objs,{},function(byRow,obj)
-			obj.x = math.ceil(obj.x / level.tilewidth)
-			obj.y = logicalToLevel( math.ceil(obj.y / level.tileheight) )
-			byRow[obj.y] = byRow[obj.y] or {}
-			table.insert(byRow[obj.y],obj)
+			obj.x = obj.x / level.tilewidth
+
+			obj.py, obj.y = obj.y, logicalToLevel( obj.y / level.tileheight )
+
+			local nearestRow = math.floor(obj.y)
+			byRow[nearestRow] = byRow[nearestRow] or {}
+			table.insert(byRow[nearestRow],obj)
 			return byRow
 		end)
 	end
 
 	local objects = getObjects(level)
-
 
 	function level:getRows(from,to)
 
@@ -63,7 +66,7 @@ function levels.init(levelName)
 			if parentRow then
 				row:setAttrLink(MOAIProp2D.INHERIT_LOC, parentRow, MOAIProp2D.TRANSFORM_TRAIT)
 				row:setAttrLink(MOAIProp2D.ATTR_PARTITION, parentRow)
-				row:setLoc(-4,(rowOffset - 1) * 1)
+				row:setLoc(0,(rowOffset - 1) * 1)
 				row:setPriority(1)
 			else
 				parentRow = row
@@ -73,21 +76,32 @@ function levels.init(levelName)
 			table.insert(rows,row)
 		end
 
+		local spawnRowObjects = function(row)
+			print("looking for " .. row)
+			local rowObjects = objects[row] 
+			if rowObjects then
+				print("Found " .. #rowObjects .. " objects, on row " .. row)
+				vent:trigger("spawned",rowObjects,row)
+			end
+		end
+
+		vent:on("row",spawnRowObjects)
+
+
 		mainThread = MOAICoroutine.new()
 		mainThread:run(function()
 			local wait = function(action)
 				while action:isBusy() do coroutine.yield() end
 			end
-			row = 1
+			row = VISIBLE_HEIGHT + 1
+			for rowOffset = 1,VISIBLE_HEIGHT do
+				spawnRowObjects(rowOffset)
+			end
+			print("initially spawned")
 			while true do
 				wait(parentRow:moveLoc ( 0, -1, 0.75,  MOAIEaseType.LINEAR))
 				row = row + 1
 				vent:trigger("row",row)
-				local rowObjects = objects[row] 
-				if rowObjects then
-					print("Found " .. #rowObjects .. " objects")
-					vent:trigger("spawned",rowObjects,row)
-				end
 			end
 		end)
 

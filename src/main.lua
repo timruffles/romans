@@ -31,7 +31,7 @@ function init()
 	local SCROLL_SPEED = 1
 
 	function initLevel(layer)
-		local level = levels.init("test")
+		local level = levels.init("test",{8,12})
 		
 		local slice, rows = level:getRows(1,100)
 
@@ -68,6 +68,7 @@ function init()
 			foe.prop:setAttrLink(MOAIProp2D.INHERIT_LOC, level, MOAIProp2D.TRANSFORM_TRAIT)
 			foe.prop:setLoc(foe.object.x,row)
 			layer:insertProp(foe.prop)
+			foe.prop:setPriority(8750)
 
 			foes[foe] = true
 		end
@@ -75,7 +76,7 @@ function init()
 	end)
 
 	local die = function(rig)
-		layer:removeProp(rig.prop)
+		--layer:removeProp(rig.prop)
 	end
 
 	local collide = function(friend,foe)
