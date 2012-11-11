@@ -379,7 +379,7 @@ function DollarRecognizer() -- constructor
 
 		local b = math.huge;
 		local u = -1;
-		for i = 1, #Unistrokes do -- for each unistroke
+		for i = 1, #this.Unistrokes do -- for each unistroke
 			local d;
 			if (useProtractor) then -- for Protractor
 				d = OptimalCosineDistance(this.Unistrokes[i].Vector, vector);
