@@ -64,6 +64,10 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ]=]
+
+local function Deg2Rad(d)
+	return (d * math.pi / 180.0);
+end
 --
 -- Point class
 --
@@ -122,7 +126,8 @@ local Phi = 0.5 * (-1.0 + math.sqrt(5.0)); -- Golden Ratio
 --
 -- DollarRecognizer class
 --
-function DollarRecognizer() -- constructor
+protractor = {}
+function protractor.DollarRecognizer() -- constructor
 	local this = {}
 	--
 	-- one built-in unistroke per gesture type
@@ -155,21 +160,31 @@ function DollarRecognizer() -- constructor
 		points = TranslateTo(points, Origin);
 		local vector = Vectorize(points); -- for Protractor
 
-		local b = +Infinity;
+		local b = math.huge;
 		local u = -1;
 		for i = 1, #Unistrokes do -- for each unistroke
 			local d;
 			if (useProtractor) then -- for Protractor
 				d = OptimalCosineDistance(this.Unistrokes[i].Vector, vector);
 			else -- Golden Section Search (original $1)
-				d = DistanceAtBestAngle(points, this.Unistrokes[i], -AngleRange, +AngleRange, AnglePrecision);
+				d = DistanceAtBestAngle(points, this.Unistrokes[i], -AngleRange, AngleRange, AnglePrecision);
 			end
 			if (d < b) then
 				b = d; -- best (least) distance
 				u = i; -- unistroke
 			end
 		end
-		return (u == -1) ? Result("No match.", 0.0) : Result(this.Unistrokes[u].Name, useProtractor ? 1.0 / b : 1.0 - b / HalfDiagonal);
+		if (u == -1) then
+			return Result("No match.", 0.0)
+		else
+			local x = 0
+			if useProtractor then
+				x = 1.0 / b
+			else
+				x = 1.0 - b / HalfDiagonal
+			end
+			return Result(this.Unistrokes[u].Name, x)
+		end
 	end
 
 	this.AddGesture = function(name, points)
@@ -177,7 +192,7 @@ function DollarRecognizer() -- constructor
 		local num = 0;
 		for i = 1, #Unistrokes do
 			if (this.Unistrokes[i].Name == name) then
-				num++;
+				num = num + 1
 			end
 		end
 		return num;
@@ -313,7 +328,8 @@ function DistanceAtAngle(points, T, radians)
 end
 
 function Centroid(points)
-	local x = 0.0, y = 0.0;
+	local x = 0.0
+	local y = 0.0;
 	for i = 1, #points do
 		x = x + points[i].X;
 		y = y + points[i].Y;
@@ -324,7 +340,10 @@ function Centroid(points)
 end
 
 function BoundingBox(points)
-	local minX = +Infinity, maxX = -Infinity, minY = +Infinity, maxY = -Infinity;
+	local minX = math.huge
+	local maxX = -math.huge
+	local minY = math.huge
+	local maxY = -math.huge
 	for i = 1, #points do
 		minX = math.min(minX, points[i].X);
 		minY = math.min(minY, points[i].Y);
@@ -356,6 +375,3 @@ function Distance(p1, p2)
 	return math.sqrt(dx * dx + dy * dy);
 end
 
-function Deg2Rad(d)
-	return (d * math.PI / 180.0);
-end
