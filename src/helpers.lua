@@ -39,3 +39,13 @@ helpers.table.join = function(list, delimiter)
   end
   return string
 end
+
+function pp(...)
+	local args = ...
+	if #args == 1 then
+		if type(args[1]) == "table" then
+			return print(unpack(args[1]))
+		end
+	end
+	print(unpack(args))
+end

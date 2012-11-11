@@ -1,6 +1,40 @@
 _ = require "libs/underscore"
+require "src/helpers"
 
 gestures = {}
+
+local getX = function(point)
+	return point[1]	
+end
+local getY = function(point)
+	return point[2]	
+end
+local getXYDiff = function(point)
+	return point[3]	
+end
+
+local normalisePath = function(points)
+
+	local xs = _.map(points,getX)
+	local ys = _.map(points,getY)
+
+	local right = math.max(unpack(xs))
+	local left = math.min(unpack(xs))
+	local top = math.max(unpack(ys))
+	local bottom = math.min(unpack(ys))
+
+
+	local scale
+	if left - right > top - bottom then
+		scale = 1/(left-right)
+	else
+		scale = 1/(top-bottom)
+	end
+
+	return _.map(points,function(p)
+		return {p[1]*scale,p[2]*scale}
+	end)
+end
 
 local differences = function(points)
 	local diffs = {}
@@ -31,7 +65,7 @@ local travel = function(differences)
 	return sum( _.map(differences,_.compose(math.abs,getX)) ) + sum( _.map(differences,_.compose(math.abs,getY)) )
 end
 
-local stdDev = function(samples)
+local summary = function(samples)
 	local sampleMean = mean(samples)
 	local variances = _.map(samples,function(sample)
 		local diff = sampleMean - sample
@@ -76,53 +110,55 @@ end
 
 local goodChunkSize = function(xs,min)
 	min = min or 2
-	return math.max(math.ceil(math.sqrt(#diffs)),min)
+	return math.max(math.ceil(math.sqrt(#xs)),min)
 end
 
 local movingAverage = function(xs)
-	local size = goodChunkSize(xs,3)
+	local size = 3 or goodChunkSize(xs,3)
 	if size / 2 == 0 then
 		size = size - 1
 	end
 	local sliced = slices(xs,size)
 	local averages = _.map(sliced,mean)
-	local rampLength =  math.floor(sliced /2)/2
-	local weights = {}
-	for i = rampLength,1,-1 do
-	end
+	local rampLength =  math.floor(size /2)/2
+	-- local weights = _.map(_.range(rampLength,1,-1),math.exp)
+	local maxSliceIndex = #xs - (#xs - (math.floor(#xs / size) * size))
+	local final = {}
 	for i,x in ipairs(xs) do
 		local avg
+		local n
 		if i < rampLength then
 			avg = math.floor(i/size)
+		elseif i > maxSliceIndex then
+			avg = averages[#averages]
 		else
 			avg = averages[i]
 		end
-
+		table.insert(final,avg)
 	end
+	print(#final,"final",#averages)
+	return final
 end
 
-local turningPoints = function(diffs)
-	local stdDev, mean = stdDev(diffs)
-	local cutoff = stdDev
-	local stdDevs = function(x)
-		return x > (mean + stdDev)
-	end
-	print(stdDev,mean,unpack(_.map(diffs,stdDevs)))
-	local chunked = chunks(diffs,goodChunkSize(diffs))
-	return _.map(chunked,function(chunk)
-		local isPos
-		local turned = false
-		_.each(chunk,function(diff)
-			if isPos == nil then 
+local turningPointsMagnitude = function(diffs)
+	local stdDev, mean = summary(diffs)
+	return _.filter(diffs,function(diff)
+		return diff > (mean + stdDev * 1.5)
+	end)
+end
+
+local turningPointsPosNeg = function(diffs)
+	local isPos
+	return _.filter(diffs,function(diff)
+		if isPos == nil then
+			isPos = diff >= 0
+		else
+			if isPos ~= (diff >= 0) then
 				isPos = diff >= 0
-			else
-				local hasTurned = isPos ~= (diff >= 0)
-				if hasTurned then
-					turned = true
-				end
+				return true
 			end
-		end)
-		return turned
+		end
+		return false
 	end)
 end
 
@@ -155,23 +191,19 @@ local gesturesByTurningPoints = {
 	}
 }
 
-local getX = function(point)
-	return point[1]	
-end
-local getY = function(point)
-	return point[2]	
-end
-local getXYDiff = function(point)
-	return point[3]	
-end
 
 gestures.recognise = function(points)
-	points = differences(points)
-	local turningPointsX = turningPoints(_.map(points,getX))
-	local turningPointsY = turningPoints(_.map(points,getY))
-	print(string.format("x tps: %s, y tps: %s",#_.filter(turningPointsX,_.identity),#_.filter(turningPointsY,_.identity)))
-	print(unpack(turningPointsX))
-	print(unpack(turningPointsY))
+	points = differences(normalisePath(points))
+	local x = _.map(points,getX)
+	local y = _.map(points,getY)
+	pp(x)
+	local turningPointsXPos = turningPointsPosNeg(x)
+	local turningPointsYPos = turningPointsPosNeg(y)
+	local turningPointsXMag = turningPointsMagnitude(x)
+	local turningPointsYMag = turningPointsMagnitude(y)
+	--print(string.format("x tps: %s, y tps: %s",#_.filter(turningPointsX,_.identity),#_.filter(turningPointsY,_.identity)))
+	print("pos",#turningPointsXPos,#turningPointsYPos)
+	print("mag",#turningPointsXMag,#turningPointsYMag)
 end
 
 local test_data = {
