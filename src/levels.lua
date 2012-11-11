@@ -20,6 +20,10 @@ function levels.init(levelName)
 
 	local tileIds = level.layers[TILE_LAYER].data
 
+	local logicalToLevel = function(row)
+		return level.height + 1 - row
+	end
+
 	function level:getRow(rowOffset)
 
 		local grid = MOAIGrid.new()
@@ -35,9 +39,20 @@ function levels.init(levelName)
 		return prop
 	end
 
-	local logicalToLevel = function(row)
-		return level.height + 1 - row
+	local getObjects = function(level)
+		local objs = level.layers[ENEMY_LAYER].objects
+		return _.reduce(objs,{},function(byRow,obj)
+			obj.x = math.ceil(obj.x / level.tilewidth)
+			obj.y = logicalToLevel( math.ceil(obj.y / level.tileheight) )
+			print(obj.x,obj.y)
+			byRow[obj.y] = byRow[obj.y] or {}
+			table.insert(byRow[obj.y],obj)
+			return byRow
+		end)
 	end
+
+	local objects = getObjects(level)
+
 
 	function level:getRows(from,to)
 
@@ -64,8 +79,16 @@ function levels.init(levelName)
 			local wait = function(action)
 				while action:isBusy() do coroutine.yield() end
 			end
+			row = 1
 			while true do
 				wait(parentRow:moveLoc ( 0, -1, 0.75,  MOAIEaseType.LINEAR))
+				row = row + 1
+				vent:trigger("row",row)
+				local rowObjects = objects[row] 
+				if rowObjects then
+					print("Found " .. #rowObjects .. " objects")
+					vent:trigger("spawned",rowObjects,row)
+				end
 			end
 		end)
 

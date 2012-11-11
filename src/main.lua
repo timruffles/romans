@@ -57,6 +57,19 @@ function init()
 	local squad = rigs.initSquad(3)
 	layer:insertProp(squad.prop)
 
+	vent:on("spawned",function(objs,row)
+
+		for i,obj in ipairs(objs) do
+
+			local foe = rigs.initFoe(obj)
+			print(foe.object.x,foe.object.y)
+			foe.prop:setAttrLink(MOAIProp2D.INHERIT_LOC, level, MOAIProp2D.TRANSFORM_TRAIT)
+			foe.prop:setLoc(foe.object.x,row)
+			layer:insertProp(foe.prop)
+		end
+			
+	end)
+
 	mainThread = MOAICoroutine.new()
 	mainThread:run(function()
 		while true do

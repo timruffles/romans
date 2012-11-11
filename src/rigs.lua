@@ -82,6 +82,18 @@ rigs.initSquad = function(n)
 
 end
 
+rigs.initFoe = function(obj)
+
+	local rig = {}
+
+	rig.object = obj
+
+	rig.prop = getProp(obj.gid)
+
+	return rig
+
+end
+
 rigs.level = function(name)
 
 	local rig = {}
@@ -89,7 +101,7 @@ rigs.level = function(name)
 	rig.level = levels.init(name)
 
 	rig.prop = rig.level.getRows(1,100)
-	
+
 	return rig
 
 end
