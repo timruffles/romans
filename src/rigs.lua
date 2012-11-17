@@ -1,6 +1,8 @@
 require "src/levels"
 require "src/helpers"
 _ = require "libs/underscore"
+require "libs/protractor"
+serpent = require "libs/serpent"
 
 rigs = {}
 
@@ -24,33 +26,26 @@ rigs.initRig = function()
 
 	rig = {}
 
+
 	return rig
 
 end
 
-rigs.initRoman = function()
+rigs.initRoman = function(level)
 
 	local rig = rigs.initRig()
 
 	rig.prop = getProp(12)
 
+	rig.getLoc = function()
+		return rig.prop:getLoc()
+	end
+
 	return rig
 
 end
 
-local eol = function(points)
-	local start, finish = points[1], points[#points]
-
-	local intercept = math.min(unpack(_.map(points,getY)))
-	local yMag = (start[2] - finish[2])
-	
-	local m = yMag / (finish[1] - start[1])
-	return function(x)
-		return -m * x + intercept
-	end
-end
-
-rigs.initSquad = function(n)
+rigs.initSquad = function(n,level)
 
 	local rig = {}
 	local squad = {}
@@ -58,26 +53,39 @@ rigs.initSquad = function(n)
 	local roman
 	local key
 	for i = 1,n do
-		roman = rigs.initRoman()
+		roman = rigs.initRoman(level)
 		if key == nil then
 			key = roman
 		else
 			roman.prop:setAttrLink(MOAIProp2D.ATTR_PARTITION, key.prop)
-			roman.prop:setLoc(i,0)
+			roman.prop:setLoc(-4+i,0)
 		end
-		squad[roman] = true
+		squad[#squad + 1] = roman
 	end
 
-	vent:on("input:gesture",function(points)
-		local eol = eol(points)
-		for roman,i in pairs(squad) do
-			local x, y = roman.prop:getLoc()
-			roman.prop:seekLoc( x, eol(x), 0.75,  MOAIEaseType.LINEAR)
+	local recognizer = protractor.DollarRecognizer()
+
+	-- input handelling
+	
+	local placeOnGesture = function(gesture)
+		local points = _.map(gesture,function(coords)
+			local x,y = unpack(coords)
+			return protractor.Point(x,y)
+		end)
+		local squadPoints = protractor.Resample(points,#squad)
+		local gesture = recognizer.Recognize(points)
+		for i,roman in ipairs(squad) do
+			local point = squadPoints[i]
+			roman.prop:seekLoc( point.X, point.Y, 0.75,  MOAIEaseType.LINEAR)
 		end
-	end)
+	end
+
+	vent:on("input:gesture",placeOnGesture)
 
 	rig.prop = key.prop
+	rig.key = key
 	rig.squad = squad
+
 
 	return rig
 
@@ -90,6 +98,15 @@ rigs.initFoe = function(obj)
 	rig.object = obj
 
 	rig.prop = getProp(obj.gid)
+
+	-- TODO crappily set from outsidej
+	rig.level = nil
+
+	rig.getLoc = function()
+		local dx,dy = rig.prop:getLoc()
+		local x,y = rig.level:getLoc()
+		return x + dx,y + dy
+	end
 
 	return rig
 

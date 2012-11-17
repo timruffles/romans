@@ -2,6 +2,8 @@ require "src/rigs"
 require "src/input"
 require "src/vents"
 
+require "src/helpers"
+
 local test = function(layer)
 	local sprite = MOAIGfxQuad2D.new()
 	sprite:setTexture("bob.png")
@@ -37,11 +39,6 @@ function init()
 
 		layer:insertProp(slice)
 
-		local roman = rigs.initRoman()
-		layer:insertProp(roman.prop)
-		roman.prop:setPriority(5000)
-
-
 		return slice
 	end
 
@@ -54,7 +51,7 @@ function init()
 	local level = initLevel(layer)
 	input.init(vent,layer)
 
-	local squad = rigs.initSquad(3)
+	local squad = rigs.initSquad(6,level)
 	layer:insertProp(squad.prop)
 
 	local foes = {}
@@ -64,11 +61,15 @@ function init()
 		for i,obj in ipairs(objs) do
 
 			local foe = rigs.initFoe(obj)
-			print(foe.object.x,foe.object.y)
+			--print(foe.object.x,foe.object.y)
 			foe.prop:setAttrLink(MOAIProp2D.INHERIT_LOC, level, MOAIProp2D.TRANSFORM_TRAIT)
 			foe.prop:setLoc(foe.object.x,row)
-			layer:insertProp(foe.prop)
+			-- TODO crappy design
+			foe.level = level
 			foe.prop:setPriority(8750)
+
+			layer:insertProp(foe.prop)
+
 
 			foes[foe] = true
 		end
@@ -76,12 +77,12 @@ function init()
 	end)
 
 	local die = function(rig)
-		--layer:removeProp(rig.prop)
+		layer:removeProp(rig.prop)
 	end
 
 	local collide = function(friend,foe)
 		local result = math.random(1,2)
-		if result == 1 then
+		if true then
 			die(foe)
 			foes[foe] = nil
 		else
@@ -110,13 +111,25 @@ function init()
 		layer:insertProp(prop)
 	end)
 
+	local distance = function(x1,y1,x2,y2)
+		local xdiff,ydiff = x1-x2, y1-y2
+		return math.sqrt(xdiff*xdiff + ydiff*ydiff)
+	end
+
+	local row = 1
+	vent:on("row",function(rowNow)
+		row = rowNow
+	end)
 
 	local detectCollisions = function()
-		for roman,i in pairs(squad.squad) do
-			local x,y = roman.prop:getLoc()
+		local bX,bY = level:getLoc()
+		for i,roman in ipairs(squad.squad) do
+			local x,y = roman.getLoc()
 			for foe,i in pairs(foes) do
-				local eX,eY = foe.prop:getLoc()
-				if x-eX < 1 or y-eY < 1 then
+				local eX,eY = foe.getLoc()
+				local dis = distance(x,y,eX,eY) 
+				--tracef("%d,%d %d,%d %d",x,y,eX,eY,dis)
+				if dis < 0.25 then
 					collide(roman,foe)
 				end
 			end
@@ -124,7 +137,7 @@ function init()
 	end
 
 	vent:on("tick",function(frame)
-		if frame % 4 == 0 then
+		if frame % 16 == 0 then
 			detectCollisions()
 		end
 	end)

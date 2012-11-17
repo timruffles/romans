@@ -8,6 +8,11 @@ helpers.trace = function(...)
 	return print(locationFormat:format( info.source, info.currentline), ... )
 end
 
+tracef = function(fmt,...)
+	local info = debug.getinfo( 2, "Sl" )
+	return print(locationFormat:format( info.source, info.currentline), string.format(fmt,...) )
+end
+
 helpers.table.slice = function(values,i1,i2)
 	local res = {}
 	local n = #values

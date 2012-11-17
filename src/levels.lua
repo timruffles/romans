@@ -77,10 +77,10 @@ function levels.init(levelName,dims)
 		end
 
 		local spawnRowObjects = function(row)
-			print("looking for " .. row)
+			-- print("looking for " .. row)
 			local rowObjects = objects[row] 
 			if rowObjects then
-				print("Found " .. #rowObjects .. " objects, on row " .. row)
+				-- print("Found " .. #rowObjects .. " objects, on row " .. row)
 				vent:trigger("spawned",rowObjects,row)
 			end
 		end

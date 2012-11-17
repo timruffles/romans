@@ -23,7 +23,7 @@ input.init = function(vent,layer)
 			local worldPoints = _.map(points,function(p)
 				return {layer:wndToWorld(unpack(p))}
 			end)
-			matrix.print(worldPoints)
+			--matrix.print(worldPoints)
 			vent:trigger("input:gesture",worldPoints)
 		end
 	end)
