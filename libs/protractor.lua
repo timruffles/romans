@@ -122,18 +122,22 @@ function Resample(points, n)
 	local I = PathLength(points) / (n - 1)
 	local D = 0
 	local newpoints = {points[1]}
-	for i = 2,#points do
+	local i = 2
+	local intervals = 0
+	-- until we have enough points, resample
+	while i < #points do
 		local d = Distance(points[i - 1], points[i])
 		if D + d >= I then
 			local qx = points[i - 1].X + ((I - D) / d) * (points[i].X - points[i - 1].X)
 			local qy = points[i - 1].Y + ((I - D) / d) * (points[i].Y - points[i - 1].Y)
 			local q = Point(qx, qy)
 			newpoints[#newpoints + 1] = q -- append new point 'q'
-			points[i] = q -- ensure 'q' will be the next i
+			Splice(points,i,0,q) -- ensure 'q' will be the next i
 			D = 0
 		else
 			D = D + d
 		end
+		i = i + 1
 	end
 	if #newpoints == n - 1 then -- somtimes we fall a rounding-error short of adding the last point, so add it if so
 		newpoints[#newpoints + 1] = Point(points[#points].X, points[#points].Y)
@@ -184,10 +188,11 @@ end
 function Vectorize(points) -- for Protractor
 	local sum = 0.0
 	local vector = {}
-	for i = 1, #points do
-		vector[#vector + 1] = points[i].X
-		vector[#vector + 1] = points[i].Y
-		sum = sum + points[i].X * points[i].X + points[i].Y * points[i].Y
+	for i = 1,#points do
+		local point = points[i]
+		vector[#vector + 1] = point.X
+		vector[#vector + 1] = point.Y
+		sum = sum + point.X * point.X + point.Y * point.Y
 	end
 	local magnitude = math.sqrt(sum)
 	for i = 1, #vector do
@@ -293,10 +298,10 @@ function DollarRecognizer() -- constructor
 	-- one built-in unistroke per gesture type
 	--
 	this.Unistrokes = {}
-	this.Unistrokes[2] = Unistroke("rectangle", {Point(78,149),Point(78,153),Point(78,157),Point(78,160),Point(79,162),Point(79,164),Point(79,167),Point(79,169),Point(79,173),Point(79,178),Point(79,183),Point(80,189),Point(80,193),Point(80,198),Point(80,202),Point(81,208),Point(81,210),Point(81,216),Point(82,222),Point(82,224),Point(82,227),Point(83,229),Point(83,231),Point(85,230),Point(88,232),Point(90,233),Point(92,232),Point(94,233),Point(99,232),Point(102,233),Point(106,233),Point(109,234),Point(117,235),Point(123,236),Point(126,236),Point(135,237),Point(142,238),Point(145,238),Point(152,238),Point(154,239),Point(165,238),Point(174,237),Point(179,236),Point(186,235),Point(191,235),Point(195,233),Point(197,233),Point(200,233),Point(201,235),Point(201,233),Point(199,231),Point(198,226),Point(198,220),Point(196,207),Point(195,195),Point(195,181),Point(195,173),Point(195,163),Point(194,155),Point(192,145),Point(192,143),Point(192,138),Point(191,135),Point(191,133),Point(191,130),Point(190,128),Point(188,129),Point(186,129),Point(181,132),Point(173,131),Point(162,131),Point(151,132),Point(149,132),Point(138,132),Point(136,132),Point(122,131),Point(120,131),Point(109,130),Point(107,130),Point(90,132),Point(81,133),Point(76,133)})
-	this.Unistrokes[4] = Unistroke("triangle",{Point(137,139),Point(135,141),Point(133,144),Point(132,146),Point(130,149),Point(128,151),Point(126,155),Point(123,160),Point(120,166),Point(116,171),Point(112,177),Point(107,183),Point(102,188),Point(100,191),Point(95,195),Point(90,199),Point(86,203),Point(82,206),Point(80,209),Point(75,213),Point(73,213),Point(70,216),Point(67,219),Point(64,221),Point(61,223),Point(60,225),Point(62,226),Point(65,225),Point(67,226),Point(74,226),Point(77,227),Point(85,229),Point(91,230),Point(99,231),Point(108,232),Point(116,233),Point(125,233),Point(134,234),Point(145,233),Point(153,232),Point(160,233),Point(170,234),Point(177,235),Point(179,236),Point(186,237),Point(193,238),Point(198,239),Point(200,237),Point(202,239),Point(204,238),Point(206,234),Point(205,230),Point(202,222),Point(197,216),Point(192,207),Point(186,198),Point(179,189),Point(174,183),Point(170,178),Point(164,171),Point(161,168),Point(154,160),Point(148,155),Point(143,150),Point(138,148),Point(136,148)})
+	this.Unistrokes[1] = Unistroke("rectangle", {Point(78,149),Point(78,153),Point(78,157),Point(78,160),Point(79,162),Point(79,164),Point(79,167),Point(79,169),Point(79,173),Point(79,178),Point(79,183),Point(80,189),Point(80,193),Point(80,198),Point(80,202),Point(81,208),Point(81,210),Point(81,216),Point(82,222),Point(82,224),Point(82,227),Point(83,229),Point(83,231),Point(85,230),Point(88,232),Point(90,233),Point(92,232),Point(94,233),Point(99,232),Point(102,233),Point(106,233),Point(109,234),Point(117,235),Point(123,236),Point(126,236),Point(135,237),Point(142,238),Point(145,238),Point(152,238),Point(154,239),Point(165,238),Point(174,237),Point(179,236),Point(186,235),Point(191,235),Point(195,233),Point(197,233),Point(200,233),Point(201,235),Point(201,233),Point(199,231),Point(198,226),Point(198,220),Point(196,207),Point(195,195),Point(195,181),Point(195,173),Point(195,163),Point(194,155),Point(192,145),Point(192,143),Point(192,138),Point(191,135),Point(191,133),Point(191,130),Point(190,128),Point(188,129),Point(186,129),Point(181,132),Point(173,131),Point(162,131),Point(151,132),Point(149,132),Point(138,132),Point(136,132),Point(122,131),Point(120,131),Point(109,130),Point(107,130),Point(90,132),Point(81,133),Point(76,133)})
+	this.Unistrokes[2] = Unistroke("triangle",{Point(137,139),Point(135,141),Point(133,144),Point(132,146),Point(130,149),Point(128,151),Point(126,155),Point(123,160),Point(120,166),Point(116,171),Point(112,177),Point(107,183),Point(102,188),Point(100,191),Point(95,195),Point(90,199),Point(86,203),Point(82,206),Point(80,209),Point(75,213),Point(73,213),Point(70,216),Point(67,219),Point(64,221),Point(61,223),Point(60,225),Point(62,226),Point(65,225),Point(67,226),Point(74,226),Point(77,227),Point(85,229),Point(91,230),Point(99,231),Point(108,232),Point(116,233),Point(125,233),Point(134,234),Point(145,233),Point(153,232),Point(160,233),Point(170,234),Point(177,235),Point(179,236),Point(186,237),Point(193,238),Point(198,239),Point(200,237),Point(202,239),Point(204,238),Point(206,234),Point(205,230),Point(202,222),Point(197,216),Point(192,207),Point(186,198),Point(179,189),Point(174,183),Point(170,178),Point(164,171),Point(161,168),Point(154,160),Point(148,155),Point(143,150),Point(138,148),Point(136,148)})
 	this.Unistrokes[3] = Unistroke("circle", {Point(127,141),Point(124,140),Point(120,139),Point(118,139),Point(116,139),Point(111,140),Point(109,141),Point(104,144),Point(100,147),Point(96,152),Point(93,157),Point(90,163),Point(87,169),Point(85,175),Point(83,181),Point(82,190),Point(82,195),Point(83,200),Point(84,205),Point(88,213),Point(91,216),Point(96,219),Point(103,222),Point(108,224),Point(111,224),Point(120,224),Point(133,223),Point(142,222),Point(152,218),Point(160,214),Point(167,210),Point(173,204),Point(178,198),Point(179,196),Point(182,188),Point(182,177),Point(178,167),Point(170,150),Point(163,138),Point(152,130),Point(143,129),Point(140,131),Point(129,136),Point(126,139)})
-	this.Unistrokes[5] = Unistroke("caret", {Point(79,245),Point(79,242),Point(79,239),Point(80,237),Point(80,234),Point(81,232),Point(82,230),Point(84,224),Point(86,220),Point(86,218),Point(87,216),Point(88,213),Point(90,207),Point(91,202),Point(92,200),Point(93,194),Point(94,192),Point(96,189),Point(97,186),Point(100,179),Point(102,173),Point(105,165),Point(107,160),Point(109,158),Point(112,151),Point(115,144),Point(117,139),Point(119,136),Point(119,134),Point(120,132),Point(121,129),Point(122,127),Point(124,125),Point(126,124),Point(129,125),Point(131,127),Point(132,130),Point(136,139),Point(141,154),Point(145,166),Point(151,182),Point(156,193),Point(157,196),Point(161,209),Point(162,211),Point(167,223),Point(169,229),Point(170,231),Point(173,237),Point(176,242),Point(177,244),Point(179,250),Point(181,255),Point(182,257)})
+	this.Unistrokes[4] = Unistroke("caret", {Point(79,245),Point(79,242),Point(79,239),Point(80,237),Point(80,234),Point(81,232),Point(82,230),Point(84,224),Point(86,220),Point(86,218),Point(87,216),Point(88,213),Point(90,207),Point(91,202),Point(92,200),Point(93,194),Point(94,192),Point(96,189),Point(97,186),Point(100,179),Point(102,173),Point(105,165),Point(107,160),Point(109,158),Point(112,151),Point(115,144),Point(117,139),Point(119,136),Point(119,134),Point(120,132),Point(121,129),Point(122,127),Point(124,125),Point(126,124),Point(129,125),Point(131,127),Point(132,130),Point(136,139),Point(141,154),Point(145,166),Point(151,182),Point(156,193),Point(157,196),Point(161,209),Point(162,211),Point(167,223),Point(169,229),Point(170,231),Point(173,237),Point(176,242),Point(177,244),Point(179,250),Point(181,255),Point(182,257)})
 	--
 	-- The $1 Gesture Recognizer API begins here -- 3 methods: Recognize(), AddGesture(), and DeleteUserGestures()
 	--
