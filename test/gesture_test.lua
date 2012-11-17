@@ -2,8 +2,11 @@ require "lunatest"
 
 package.path = package.path .. ";../?.lua"
 require "../libs/protractor"
+require "../src/helpers"
 local matrix = require '../libs/matrix'
 local ser = require '../libs/table2'
+local Point = protractor.Point
+local DollarRecognizer = protractor.DollarRecognizer
 
 local test_data = {
 	vs = {Point(50,366),Point(55,356),Point(60,349),Point(73,326),Point(103,275),Point(123,248),Point(137,224),Point(143,212),Point(148,203),Point(152,206),Point(154,211),Point(179,245),Point(200,269),Point(235,304),Point(262,328),Point(274,340),Point(276,345),Point(276,346)},
@@ -54,6 +57,25 @@ local test_data = {
 function setup()
 end
 
+function test_Resample()
+	local resamples = protractor.Resample({
+		Point(0,0),
+		Point(5,0),
+		Point(10,0),
+		Point(15,0),
+		Point(20,0),
+		Point(25,0),
+		Point(30,0),
+		Point(35,0),
+		Point(40,0),
+		Point(45,0),
+		Point(50,0),
+	},5)
+	assert_equal(0,resamples[1].X)
+	assert_equal(37.5,resamples[4].X)
+end
+
+--[[
 function test_vs()
 	local protractor = DollarRecognizer()
 	local result = protractor.Recognize(test_data.vs, true)
@@ -95,6 +117,7 @@ function test_homemade()
 	local result = protractor.Recognize(test_data.homemade, true)
 	ser.print(result)
 end
+]]
 
 lunatest.run()
 
