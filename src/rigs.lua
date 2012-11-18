@@ -67,11 +67,15 @@ rigs.initSquad = function(n,level)
 
 	-- input handelling
 	
-	local placeOnGesture = function(gesture)
-		local points = _.map(gesture,function(coords)
+	local toPoints = function(gesture)
+		return _.map(gesture,function(coords)
 			local x,y = unpack(coords)
 			return protractor.Point(x,y)
 		end)
+	end
+	
+	local placeOnGesture = function(gesture)
+		local points = toPoints(gesture)
 		local squadPoints = protractor.Resample(points,#squad)
 		local gesture = recognizer.Recognize(points)
 		for i,roman in ipairs(squad) do
@@ -80,7 +84,32 @@ rigs.initSquad = function(n,level)
 		end
 	end
 
-	vent:on("input:gesture",placeOnGesture)
+	local actionGestures = {
+		verticalLine = function(points)
+			if getY(points[1]) > getY(points[#points]) then
+				vent:trigger("stab")
+			else
+				vent:trigger("throw")
+			end
+		end,
+		horizontalLine = function(points)
+			vent:trigger("shield")
+		end
+	}
+
+	vent:on("input:gesture",function(gesture)
+		if getY(gesture[1]) < 0 then
+			placeOnGesture(gesture)
+		else
+			local points = toPoints(gesture)
+			local gesture = recognizer.Recognize(points)
+			pp(gesture)
+			local response = actionGestures[gesture.Type]	
+			if response then
+				response()
+			end
+		end
+	end)
 
 	rig.prop = key.prop
 	rig.key = key
